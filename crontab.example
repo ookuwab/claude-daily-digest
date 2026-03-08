@@ -1,0 +1,20 @@
+# Claude Daily Digest crontab configuration
+# Install: crontab -e, then paste these lines
+#
+# Prerequisites:
+#   - Node.js 20+ installed
+#   - Claude Code CLI installed and authenticated
+#   - Gmail MCP configured for Claude Code
+#   - npm install completed in project directory
+
+PATH=/path/to/node/bin:/path/to/claude/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin
+
+PROJECT_DIR=/path/to/claude-daily-digest
+
+# 05:00 - News briefing (RSS fetch + Claude Code selection/summary + Slack)
+0 5 * * * $PROJECT_DIR/scripts/run-news.sh >> $PROJECT_DIR/data/logs/cron.log 2>&1
+
+# 06:00 & 18:00 - Mail briefing
+0 6 * * * $PROJECT_DIR/scripts/run-mail.sh >> $PROJECT_DIR/data/logs/cron.log 2>&1
+
+0 18 * * * $PROJECT_DIR/scripts/run-mail.sh >> $PROJECT_DIR/data/logs/cron.log 2>&1

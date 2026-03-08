@@ -1,0 +1,14 @@
+{
+  "name": "claude-daily-digest",
+  "description": "Daily news, tech articles, and email digest powered by Claude Code and cron",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.4.2"
+  }
+}
