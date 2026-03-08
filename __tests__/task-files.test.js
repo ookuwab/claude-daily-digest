@@ -8,29 +8,29 @@ const MAIL_TASK_PATH = path.join(PROJECT_ROOT, 'tasks/mail-task.md');
 describe('news-task.md', () => {
   const content = fs.readFileSync(NEWS_TASK_PATH, 'utf-8');
 
-  it('should not contain slack-webhook.js execution instructions', () => {
+  it('slack-webhook.js の実行指示を含まないこと', () => {
     expect(content).not.toContain('node src/slack-webhook.js');
   });
 
-  it('should not contain Slack MCP usage instructions', () => {
+  it('Slack MCP 使用指示を含まないこと', () => {
     expect(content).not.toContain('Slack MCPは使用しない');
   });
 
-  it('should instruct to write output to data/news-output.txt', () => {
+  it('出力先として data/news-output.txt への Write を指示すること', () => {
     expect(content).toContain('data/news-output.txt');
     expect(content).toContain('Write');
   });
 
-  it('should instruct Claude not to send to Slack', () => {
+  it('Claude が Slack 送信を行わない旨を指示すること', () => {
     expect(content).toContain('Claudeは送信を行わないこと');
   });
 
-  it('should use Read tool instead of Bash cat for data reading', () => {
+  it('データ読み取りに Read ツールを使用する旨を指示すること', () => {
     expect(content).not.toContain('cat data/news-data.json');
     expect(content).toContain('`Read` ツールで `data/news-data.json` を読み取る');
   });
 
-  it('should preserve the message template', () => {
+  it('メッセージテンプレートが保持されていること', () => {
     expect(content).toContain('Morning Briefing');
     expect(content).toContain('Tech Picks');
   });
@@ -39,24 +39,24 @@ describe('news-task.md', () => {
 describe('mail-task.md', () => {
   const content = fs.readFileSync(MAIL_TASK_PATH, 'utf-8');
 
-  it('should not contain slack-webhook.js execution instructions', () => {
+  it('slack-webhook.js の実行指示を含まないこと', () => {
     expect(content).not.toContain('node src/slack-webhook.js');
   });
 
-  it('should not contain Slack MCP usage instructions', () => {
+  it('Slack MCP 使用指示を含まないこと', () => {
     expect(content).not.toContain('Slack MCPは使用しない');
   });
 
-  it('should instruct to write output to data/mail-output.txt', () => {
+  it('出力先として data/mail-output.txt への Write を指示すること', () => {
     expect(content).toContain('data/mail-output.txt');
     expect(content).toContain('Write');
   });
 
-  it('should instruct Claude not to send to Slack', () => {
+  it('Claude が Slack 送信を行わない旨を指示すること', () => {
     expect(content).toContain('Claudeは送信を行わないこと');
   });
 
-  it('should preserve the message template', () => {
+  it('メッセージテンプレートが保持されていること', () => {
     expect(content).toContain('Mail Briefing');
     expect(content).toContain('要確認メール');
   });

@@ -20,7 +20,7 @@ function deduplicateArticles(articles) {
       result.push(article);
     } else {
       const existingIdx = seen.get(key);
-      if (article.summary.length > result[existingIdx].summary.length) {
+      if ((article.summary || '').length > (result[existingIdx].summary || '').length) {
         result[existingIdx] = article;
       }
     }

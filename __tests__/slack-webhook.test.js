@@ -196,6 +196,34 @@ describe('sendSlackMessage', () => {
     });
   });
 
+  describe('options パラメータ', () => {
+    it('options.username がペイロードに含まれること', async () => {
+      // Given
+      global.fetch.mockResolvedValue(createMockResponse(200, 'ok'));
+
+      // When
+      await sendSlackMessage('テスト', { username: 'test-bot' });
+
+      // Then
+      const [, options] = global.fetch.mock.calls[0];
+      const payload = JSON.parse(options.body);
+      expect(payload.username).toBe('test-bot');
+    });
+
+    it('options.icon_emoji がペイロードに含まれること', async () => {
+      // Given
+      global.fetch.mockResolvedValue(createMockResponse(200, 'ok'));
+
+      // When
+      await sendSlackMessage('テスト', { icon_emoji: ':robot_face:' });
+
+      // Then
+      const [, options] = global.fetch.mock.calls[0];
+      const payload = JSON.parse(options.body);
+      expect(payload.icon_emoji).toBe(':robot_face:');
+    });
+  });
+
   describe('エッジケース', () => {
     it('5000 文字ちょうどのメッセージを 1 リクエストで送信すること', async () => {
       // Given

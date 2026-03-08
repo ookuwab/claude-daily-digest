@@ -8,11 +8,11 @@ const RUN_MAIL_PATH = path.join(PROJECT_ROOT, 'scripts/run-mail.sh');
 describe('run-news.sh', () => {
   const content = fs.readFileSync(RUN_NEWS_PATH, 'utf-8');
 
-  it('should define OUTPUT_FILE variable', () => {
+  it('OUTPUT_FILE 変数が定義されていること', () => {
     expect(content).toContain('OUTPUT_FILE="$PROJECT_DIR/data/news-output.txt"');
   });
 
-  it('should clean up previous output file before Claude run', () => {
+  it('Claude 実行前に前回の出力ファイルを削除すること', () => {
     const rmIndex = content.indexOf('rm -f "$OUTPUT_FILE"');
     const claudeIndex = content.indexOf('claude -p');
     expect(rmIndex).toBeGreaterThan(-1);
@@ -20,24 +20,24 @@ describe('run-news.sh', () => {
     expect(rmIndex).toBeLessThan(claudeIndex);
   });
 
-  it('should use Read,Write,WebSearch as allowedTools (no Bash)', () => {
+  it('allowedTools に Read,Write,WebSearch を指定し Bash を含まないこと', () => {
     expect(content).toContain('--allowedTools "Read,Write,WebSearch"');
     expect(content).not.toContain('Bash(read files:*)');
   });
 
-  it('should check output file existence after Claude run', () => {
+  it('Claude 実行後に出力ファイルの存在を確認すること', () => {
     expect(content).toContain('[ ! -f "$OUTPUT_FILE" ]');
   });
 
-  it('should send via slack-webhook.js with --file flag', () => {
+  it('slack-webhook.js に --file フラグ付きで送信すること', () => {
     expect(content).toContain('node "$PROJECT_DIR/src/slack-webhook.js" --file "$OUTPUT_FILE"');
   });
 
-  it('should pipe claude output through tee for logging', () => {
+  it('Claude の出力を tee でログファイルに記録すること', () => {
     expect(content).toContain('2>&1 | tee -a "$LOG_FILE"');
   });
 
-  it('should exit with error if output file is missing', () => {
+  it('出力ファイルが存在しない場合にエラー終了すること', () => {
     const checkIndex = content.indexOf('[ ! -f "$OUTPUT_FILE" ]');
     const exitIndex = content.indexOf('exit 1', checkIndex);
     expect(exitIndex).toBeGreaterThan(checkIndex);
@@ -47,11 +47,11 @@ describe('run-news.sh', () => {
 describe('run-mail.sh', () => {
   const content = fs.readFileSync(RUN_MAIL_PATH, 'utf-8');
 
-  it('should define OUTPUT_FILE variable', () => {
+  it('OUTPUT_FILE 変数が定義されていること', () => {
     expect(content).toContain('OUTPUT_FILE="$PROJECT_DIR/data/mail-output.txt"');
   });
 
-  it('should clean up previous output file before Claude run', () => {
+  it('Claude 実行前に前回の出力ファイルを削除すること', () => {
     const rmIndex = content.indexOf('rm -f "$OUTPUT_FILE"');
     const claudeIndex = content.indexOf('claude -p');
     expect(rmIndex).toBeGreaterThan(-1);
@@ -59,34 +59,34 @@ describe('run-mail.sh', () => {
     expect(rmIndex).toBeLessThan(claudeIndex);
   });
 
-  it('should use Gmail MCP tools, Read, Write, WebSearch as allowedTools (no Bash)', () => {
+  it('allowedTools に Gmail MCP ツール・Read・Write・WebSearch を指定し Bash を含まないこと', () => {
     expect(content).toContain('mcp__claude_ai_Gmail__gmail_search_messages');
     expect(content).toContain('Read,Write,WebSearch');
     expect(content).not.toContain('Bash(read files:*)');
   });
 
-  it('should check output file existence as part of success condition', () => {
+  it('成功条件として出力ファイルの存在を確認すること', () => {
     expect(content).toContain('[ -f "$OUTPUT_FILE" ]');
   });
 
-  it('should send via slack-webhook.js with --file flag', () => {
+  it('slack-webhook.js に --file フラグ付きで送信すること', () => {
     expect(content).toContain('node "$PROJECT_DIR/src/slack-webhook.js" --file "$OUTPUT_FILE"');
   });
 
-  it('should pipe claude output through tee for logging', () => {
+  it('Claude の出力を tee でログファイルに記録すること', () => {
     expect(content).toContain('2>&1 | tee -a "$LOG_FILE"');
   });
 
-  it('should update status with lastSuccessTime on success', () => {
+  it('成功時に lastSuccessTime でステータスを更新すること', () => {
     expect(content).toContain("lastSuccessTime");
     expect(content).toContain("Status updated: success");
   });
 
-  it('should update status to failure when any step fails', () => {
+  it('失敗時にステータスを failure に更新すること', () => {
     expect(content).toContain("Status updated: failure");
   });
 
-  it('should send Slack notification on failure', () => {
+  it('失敗時に Slack エラー通知を送信すること', () => {
     expect(content).toContain("Mail Briefing がエラー終了しました");
   });
 });

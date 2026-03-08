@@ -5,15 +5,11 @@ jest.mock('../src/tech-feed', () => ({
   fetchQiitaTrending: jest.fn(),
   fetchZennTrending: jest.fn(),
 }));
-jest.mock('../src/articles', () => ({
-  deduplicateArticles: jest.fn(articles => articles),
-}));
 jest.mock('fs');
 
 const { fetchNewsAndSave } = require('../src/fetch-news');
 const { fetchFeed } = require('../src/rss-feed');
 const { fetchQiitaTrending, fetchZennTrending } = require('../src/tech-feed');
-const { deduplicateArticles } = require('../src/articles');
 const fs = require('fs');
 
 function createArticle(overrides) {
@@ -43,7 +39,6 @@ describe('fetchNewsAndSave', () => {
     fetchZennTrending.mockResolvedValue([
       createArticle({ source: 'Zenn', category: 'テック記事' }),
     ]);
-    deduplicateArticles.mockImplementation(articles => articles);
     fs.writeFileSync = jest.fn();
     fs.mkdirSync = jest.fn();
   });
@@ -79,12 +74,24 @@ describe('fetchNewsAndSave', () => {
       expect(fetchZennTrending).toHaveBeenCalledTimes(1);
     });
 
-    it('重複排除を実行すること', async () => {
+    it('重複する記事が排除されて出力されること', async () => {
+      // Given: 全フィードが同じタイトルの記事を返す（重複発生）
+      const duplicateArticle = createArticle({ title: '重複記事のタイトルテスト用ダミーテキストです', summary: '短い要約' });
+      const duplicateWithLongerSummary = createArticle({ title: '重複記事のタイトルテスト用ダミーテキストです', summary: 'より長い要約テキストです', source: 'Qiita' });
+      fetchFeed.mockResolvedValue([duplicateArticle]);
+      fetchQiitaTrending.mockResolvedValue([duplicateWithLongerSummary]);
+      fetchZennTrending.mockResolvedValue([]);
+
       // When
       await fetchNewsAndSave(OUTPUT_PATH);
 
-      // Then
-      expect(deduplicateArticles).toHaveBeenCalledTimes(1);
+      // Then: 重複排除により記事数が減少し、summary が長い方が残る
+      const writtenData = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
+      expect(writtenData.meta.totalArticlesBeforeDedup).toBeGreaterThan(
+        writtenData.meta.totalArticlesAfterDedup
+      );
+      expect(writtenData.meta.totalArticlesAfterDedup).toBe(1);
+      expect(writtenData.articles[0].summary).toBe('より長い要約テキストです');
     });
   });
 

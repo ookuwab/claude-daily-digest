@@ -283,6 +283,28 @@ describe('rss-feed', () => {
       expect(articles[0].summary).toMatch(/\.\.\.$/);
     });
 
+    it('pubDate が存在しない記事はフィルタされること', async () => {
+      // Given
+      const noPubDateXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>テスト</title>
+    <item>
+      <title>日付なし記事</title>
+      <link>https://example.com/no-date</link>
+      <description>日付なしの要約</description>
+    </item>
+  </channel>
+</rss>`;
+      global.fetch.mockResolvedValue(createMockResponse(200, noPubDateXml));
+
+      // When
+      const articles = await fetchFeed(FEED, CUTOFF);
+
+      // Then
+      expect(articles).toEqual([]);
+    });
+
     it('アイテムが 0 件の XML でも空配列を返すこと', async () => {
       // Given
       const emptyRss = `<?xml version="1.0" encoding="UTF-8"?>

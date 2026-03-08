@@ -189,5 +189,32 @@ describe('deduplicateArticles', () => {
       expect(result).toHaveLength(1);
       expect(result[0].summary).toBe('これが一番長い要約テキスト');
     });
+
+    it('summary が undefined の記事同士が重複してもエラーにならないこと', () => {
+      // Given
+      const articles = [
+        createArticle({ title: '同じタイトル', summary: undefined }),
+        createArticle({ title: '同じタイトル', summary: undefined }),
+      ];
+
+      // When & Then
+      expect(() => deduplicateArticles(articles)).not.toThrow();
+      expect(deduplicateArticles(articles)).toHaveLength(1);
+    });
+
+    it('summary が undefined の記事と値ありの記事が重複した場合、値ありの方を残すこと', () => {
+      // Given
+      const articles = [
+        createArticle({ title: '同じタイトル', summary: undefined }),
+        createArticle({ title: '同じタイトル', summary: '要約あり' }),
+      ];
+
+      // When
+      const result = deduplicateArticles(articles);
+
+      // Then
+      expect(result).toHaveLength(1);
+      expect(result[0].summary).toBe('要約あり');
+    });
   });
 });
