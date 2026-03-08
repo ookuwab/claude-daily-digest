@@ -8,10 +8,8 @@ DATA_FILE="$PROJECT_DIR/data/news-data.json"
 TASK_FILE="$PROJECT_DIR/tasks/news-task.md"
 OUTPUT_FILE="$PROJECT_DIR/data/news-output.txt"
 
-# .env 読み込み（.env.local 優先）
-if [ -f "$PROJECT_DIR/.env.local" ]; then
-  set -a; source "$PROJECT_DIR/.env.local"; set +a
-elif [ -f "$PROJECT_DIR/.env" ]; then
+# .env 読み込み
+if [ -f "$PROJECT_DIR/.env" ]; then
   set -a; source "$PROJECT_DIR/.env"; set +a
 fi
 

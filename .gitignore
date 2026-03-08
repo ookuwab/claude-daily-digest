@@ -4,5 +4,4 @@ data/*.json
 data/*.txt
 data/logs/
 .env
-.env.local
 crontab.local
