@@ -1,5 +1,6 @@
 node_modules/
 .takt/
+.claude/
 data/*.json
 data/*.txt
 data/logs/
