@@ -24,7 +24,17 @@ notify_error() {
 }
 trap notify_error ERR
 
+# モデル設定（sonnet / opus → claude-{name}-4-6 に展開）
+CLAUDE_MODEL_FLAG=""
+case "${CLAUDE_MODEL:-}" in
+  sonnet) CLAUDE_MODEL_FLAG="--model claude-sonnet-4-6" ;;
+  opus)   CLAUDE_MODEL_FLAG="--model claude-opus-4-6" ;;
+  "")     ;; # 未指定: Claude Code デフォルト
+  *)      CLAUDE_MODEL_FLAG="--model $CLAUDE_MODEL" ;; # フルID指定も許容
+esac
+
 echo "=== News Task Start: $(date) ===" | tee "$LOG_FILE"
+echo "Model: ${CLAUDE_MODEL:-default}" | tee -a "$LOG_FILE"
 
 echo "--- Phase 1: RSS/API fetch ---" | tee -a "$LOG_FILE"
 node "$PROJECT_DIR/src/fetch-news.js" "$DATA_FILE" 2>&1 | tee -a "$LOG_FILE"
@@ -39,6 +49,7 @@ JSONL_FILE="$LOG_DIR/news-$(date +%Y%m%d-%H%M%S).jsonl"
 
 echo "--- Phase 2: Claude Code news selection ---" | tee -a "$LOG_FILE"
 claude -p "$(cat "$TEMP_TASK")" \
+  $CLAUDE_MODEL_FLAG \
   --allowedTools "Read,Write,WebSearch" \
   --output-format stream-json \
   --verbose \

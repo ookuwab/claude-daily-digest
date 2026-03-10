@@ -1,6 +1,6 @@
 # Claude Daily Digest
 
-毎朝のニュース・テック記事・メールを自動収集・要約し、Slack に配信するローカル cron + Claude Code ツール。
+毎朝のニュース・テック記事・メールを自動収集・要約し、Slack に配信するローカル Claude Code ツール。macOS launchd Agent（推奨）または crontab でスケジュール実行する。
 
 ## Slack 出力イメージ
 
@@ -86,7 +86,7 @@
 
 ## 仕組みの全体像
 
-3つの cron ジョブで動作する。
+3つのスケジュールジョブ（launchd Agent または cron）で動作する。
 
 ```
 05:00  ニュースタスク
@@ -109,10 +109,12 @@
 
 ## 前提条件
 
+- macOS（launchd Agent を使う場合）
 - Node.js 20 以上
-- [Claude Code CLI](https://docs.anthropic.com/claude-code)（認証済み）
+- [Claude Code CLI](https://docs.anthropic.com/claude-code)
 - Slack Incoming Webhook URL
 - （メール機能を使う場合）Gmail MCP が Claude Code で利用可能
+- （crontab で運用する場合）Anthropic API キー（[Console](https://console.anthropic.com/) で発行）
 
 ## セットアップ
 
@@ -135,9 +137,15 @@ cp .env.example .env
 ```
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/XXX/YYY/ZZZ
 SLACK_USER_ID=U0123456789
+CLAUDE_MODEL=sonnet
 ENABLE_TECH_FEEDS=true
 ENABLE_MAIL_DIGEST=true
 ```
+
+> **`ANTHROPIC_API_KEY` について**
+> launchd Agent で運用する場合は OAuth 認証が使えるため、API キーは不要。
+> crontab で運用する場合は OAuth が動作しないため、[Anthropic Console](https://console.anthropic.com/) で発行した API キーを `.env` に設定すること。
+> API キーを設定する場合は `.env` のパーミッションを `chmod 600 .env` で所有者のみに制限することを推奨。
 
 ### 3. Gmail 認証設定（メール機能を使う場合）
 
@@ -155,7 +163,48 @@ Claude Code の Gmail MCP を使用してメールにアクセスする。初回
 > claude   # 起動後、信頼の確認プロンプトに「はい」と答える
 > ```
 
-### 4. crontab 設定
+### 4. スケジュール実行の設定
+
+#### 方法 A: launchd Agent（推奨・macOS のみ）
+
+launchd Agent はユーザーのログインセッションで実行されるため、Claude Code の OAuth 認証がそのまま使える。API キー不要で運用可能。
+
+`launchd/*.plist.example` をコピーしてパスを自分の環境に合わせて編集する。
+
+```bash
+# plist を作成（example から実ファイルを生成）
+for f in launchd/*.plist.example; do cp "$f" "${f%.example}"; done
+# エディタで各 .plist 内のパスを自分の環境に書き換える
+
+# インストール
+cp launchd/*.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.claude-daily-digest.news.plist
+launchctl load ~/Library/LaunchAgents/com.claude-daily-digest.mail.plist
+```
+
+```bash
+# 手動トリガー（動作確認用）
+launchctl start com.claude-daily-digest.news
+launchctl start com.claude-daily-digest.mail
+```
+
+```bash
+# アンインストール
+launchctl unload ~/Library/LaunchAgents/com.claude-daily-digest.news.plist
+launchctl unload ~/Library/LaunchAgents/com.claude-daily-digest.mail.plist
+rm ~/Library/LaunchAgents/com.claude-daily-digest.*.plist
+```
+
+> **launchd の注意点**
+> - plist 内のパスは絶対パスで記述すること（`~` は使えない）
+> - Mac スリープ中はジョブが実行されないが、スリープ復帰後にスケジュール済みタスクが自動実行される
+> - OAuth トークンが期限切れになった場合、ターミナルで `claude` を起動してトークンをリフレッシュする必要がある
+> - ログは `data/logs/launchd-*.log` に出力される
+> - ステータス確認: `launchctl list | grep claude`
+
+#### 方法 B: crontab
+
+cron 環境では OAuth 認証が動作しないため、`.env` に `ANTHROPIC_API_KEY` の設定が必要（API 課金）。
 
 ```bash
 crontab -e
@@ -167,7 +216,7 @@ crontab -e
 > - PATH に `node` と `claude` のパスが必要。`crontab.example` の PATH 行を参照
 > - `~` は使えない。必ず絶対パス（`/Users/...` や `/home/...`）で記述すること
 > - 設定は永続的。一度登録すれば PC 再起動後も残る
-> - ただし **PC がスリープ中・電源オフの時刻のジョブは実行されない**
+> - ただし **PC がスリープ中・電源オフの時刻のジョブは実行されない**（復帰後の自動実行もなし）
 > - 登録確認: `crontab -l`
 
 ## カスタマイズ
@@ -200,9 +249,12 @@ src/
 ├── slack-webhook.js   # Slack Webhook 送信・メッセージ分割
 └── fetch-news.js      # メインオーケストレーション・CLI
 scripts/
-├── run-news.sh        # ニュース cron ラッパー
-├── run-mail.sh        # メール cron ラッパー
+├── run-news.sh        # ニュース実行ラッパー
+├── run-mail.sh        # メール実行ラッパー
 └── format-session-log.sh  # Claude Code ログ整形
+launchd/
+├── com.claude-daily-digest.news.plist.example  # launchd Agent テンプレート（ニュース）
+└── com.claude-daily-digest.mail.plist.example  # launchd Agent テンプレート（メール）
 tasks/
 ├── news-task.md       # Claude Code 用ニュース選定プロンプト
 └── mail-task.md       # Claude Code 用メール確認プロンプト

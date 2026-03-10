@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.claude-daily-digest.mail</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/path/to/claude-daily-digest/scripts/run-mail.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/path/to/claude-daily-digest</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/path/to/.local/bin:/path/to/.nodebrew/current/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
+  </dict>
+
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict>
+      <key>Hour</key>
+      <integer>6</integer>
+      <key>Minute</key>
+      <integer>0</integer>
+    </dict>
+    <dict>
+      <key>Hour</key>
+      <integer>18</integer>
+      <key>Minute</key>
+      <integer>0</integer>
+    </dict>
+  </array>
+
+  <key>StandardOutPath</key>
+  <string>/path/to/claude-daily-digest/data/logs/launchd-mail.log</string>
+  <key>StandardErrorPath</key>
+  <string>/path/to/claude-daily-digest/data/logs/launchd-mail.log</string>
+</dict>
+</plist>

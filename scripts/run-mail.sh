@@ -24,7 +24,17 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/mail-$(date +%Y%m%d-%H%M%S).log"
 TODAY=$(date +%Y-%m-%d)
 
+# モデル設定（sonnet / opus → claude-{name}-4-6 に展開）
+CLAUDE_MODEL_FLAG=""
+case "${CLAUDE_MODEL:-}" in
+  sonnet) CLAUDE_MODEL_FLAG="--model claude-sonnet-4-6" ;;
+  opus)   CLAUDE_MODEL_FLAG="--model claude-opus-4-6" ;;
+  "")     ;; # 未指定: Claude Code デフォルト
+  *)      CLAUDE_MODEL_FLAG="--model $CLAUDE_MODEL" ;; # フルID指定も許容
+esac
+
 echo "=== Mail Task Start: $(date) ===" | tee "$LOG_FILE"
+echo "Model: ${CLAUDE_MODEL:-default}" | tee -a "$LOG_FILE"
 
 # 前回成功時刻を取得（なければ26時間前）
 DEFAULT_EPOCH=$(node -e "console.log(Math.floor(Date.now()/1000 - 26*3600))")
@@ -51,6 +61,7 @@ JSONL_FILE="$LOG_DIR/mail-$(date +%Y%m%d-%H%M%S).jsonl"
 
 echo "--- Claude Code mail check ---" | tee -a "$LOG_FILE"
 if claude -p "$(cat "$TEMP_TASK")" \
+  $CLAUDE_MODEL_FLAG \
   --allowedTools "mcp__claude_ai_Gmail__gmail_search_messages,mcp__claude_ai_Gmail__gmail_read_message,mcp__claude_ai_Gmail__gmail_read_thread,Read,Write,WebSearch" \
   --output-format stream-json \
   --verbose \

@@ -6,3 +6,4 @@ data/*.txt
 data/logs/
 .env
 crontab.local
+launchd/*.plist
