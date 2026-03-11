@@ -62,7 +62,9 @@ JSONL_FILE="$LOG_DIR/mail-$(date +%Y%m%d-%H%M%S).jsonl"
 echo "--- Claude Code mail check ---" | tee -a "$LOG_FILE"
 if claude -p "$(cat "$TEMP_TASK")" \
   $CLAUDE_MODEL_FLAG \
-  --allowedTools "mcp__claude_ai_Gmail__gmail_search_messages,mcp__claude_ai_Gmail__gmail_read_message,mcp__claude_ai_Gmail__gmail_read_thread,Read,Write,WebSearch" \
+  --allowedTools "mcp__claude_ai_Gmail__gmail_search_messages,mcp__claude_ai_Gmail__gmail_read_message,mcp__claude_ai_Gmail__gmail_read_thread,Read,Write,Grep,WebSearch" \
+  --disallowedTools "Bash,Edit" \
+  --max-turns 50 \
   --output-format stream-json \
   --verbose \
   </dev/null 2>&1 \
