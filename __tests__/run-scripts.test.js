@@ -53,15 +53,33 @@ describe('run-mail.sh', () => {
 
   it('Claude 実行前に前回の出力ファイルを削除すること', () => {
     const rmIndex = content.indexOf('rm -f "$OUTPUT_FILE"');
-    const claudeIndex = content.indexOf('claude -p');
+    const claudeIndex = content.indexOf('claude -p "$(cat "$TEMP_TASK")"');
     expect(rmIndex).toBeGreaterThan(-1);
     expect(claudeIndex).toBeGreaterThan(-1);
     expect(rmIndex).toBeLessThan(claudeIndex);
   });
 
+  it('メインタスク前に OAuth warmup を実行すること', () => {
+    const warmupIndex = content.indexOf('Reply with OK');
+    const mainIndex = content.indexOf('claude -p "$(cat "$TEMP_TASK")"');
+    expect(warmupIndex).toBeGreaterThan(-1);
+    expect(mainIndex).toBeGreaterThan(-1);
+    expect(warmupIndex).toBeLessThan(mainIndex);
+  });
+
+  it('OAuth warmup が失敗してもスクリプトが続行すること', () => {
+    // warmup ブロック全体（複数行）で || による失敗吸収を確認
+    const warmupStart = content.indexOf('Reply with OK');
+    const warmupEnd = content.indexOf('sleep 3', warmupStart);
+    expect(warmupStart).toBeGreaterThan(-1);
+    expect(warmupEnd).toBeGreaterThan(-1);
+    const warmupBlock = content.substring(warmupStart, warmupEnd);
+    expect(warmupBlock).toMatch(/\|\|/);
+  });
+
   it('allowedTools に Gmail MCP ツール・Read・Write・WebSearch を指定し Bash を含まないこと', () => {
     expect(content).toContain('mcp__claude_ai_Gmail__gmail_search_messages');
-    expect(content).toContain('Read,Write,WebSearch');
+    expect(content).toContain('Read,Write,Grep,WebSearch');
     expect(content).not.toContain('Bash(read files:*)');
   });
 

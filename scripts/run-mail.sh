@@ -21,6 +21,17 @@ fi
 
 mkdir -p "$LOG_DIR"
 
+# --- OAuth token warmup ---
+# claude -p 実行で OAuth トークンをリフレッシュし、MCP コネクタを有効化する。
+# トークンは約12時間で失効するため、メインタスク前に毎回実行する。
+echo "--- OAuth warmup: $(date) ---" >> "$LOG_DIR/warmup.log"
+claude -p "Reply with OK" \
+  --max-turns 1 \
+  --output-format text \
+  </dev/null >> "$LOG_DIR/warmup.log" 2>&1 \
+  || echo "OAuth warmup failed (exit $?), continuing" >> "$LOG_DIR/warmup.log"
+sleep 3
+
 LOG_FILE="$LOG_DIR/mail-$(date +%Y%m%d-%H%M%S).log"
 TODAY=$(date +%Y-%m-%d)
 
