@@ -42,6 +42,7 @@ Slack送信はシェルスクリプトが行うため、Claudeは送信を行わ
 ```
 <@{{SLACK_USER_ID}}>
 :email: *Mail Briefing - YYYY/MM/DD（曜日）*
+_{{FETCH_FROM_DATE}} 以降のメールを確認_
 
 ━━━━━━━━━━━━━━━━━━━━
 :credit_card: *決済・カード利用*（X件）

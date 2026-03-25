@@ -68,8 +68,14 @@ describe('config', () => {
   });
 
   describe('Slack 設定', () => {
-    it('SLACK_WEBHOOK_URL が Slack Webhook URL 形式であること', () => {
-      expect(CONFIG.SLACK_WEBHOOK_URL).toMatch(
+    it('SLACK_WEBHOOK_URL_NEWS が Slack Webhook URL 形式であること', () => {
+      expect(CONFIG.SLACK_WEBHOOK_URL_NEWS).toMatch(
+        /^https:\/\/hooks\.slack\.com\/services\//
+      );
+    });
+
+    it('SLACK_WEBHOOK_URL_MAIL が Slack Webhook URL 形式であること', () => {
+      expect(CONFIG.SLACK_WEBHOOK_URL_MAIL).toMatch(
         /^https:\/\/hooks\.slack\.com\/services\//
       );
     });

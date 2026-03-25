@@ -1,5 +1,5 @@
-if (!process.env.SLACK_WEBHOOK_URL) {
-  throw new Error('SLACK_WEBHOOK_URL environment variable is not set. Copy .env.example to .env and configure it.');
+if (!process.env.SLACK_WEBHOOK_URL_NEWS || !process.env.SLACK_WEBHOOK_URL_MAIL) {
+  throw new Error('SLACK_WEBHOOK_URL_NEWS and SLACK_WEBHOOK_URL_MAIL must be set. Copy .env.example to .env and configure it.');
 }
 
 const CONFIG = {
@@ -13,7 +13,8 @@ const CONFIG = {
   ZENN_API_URL: 'https://zenn.dev/api/articles',
   ZENN_PER_PAGE: 20,
 
-  SLACK_WEBHOOK_URL: process.env.SLACK_WEBHOOK_URL,
+  SLACK_WEBHOOK_URL_NEWS: process.env.SLACK_WEBHOOK_URL_NEWS,
+  SLACK_WEBHOOK_URL_MAIL: process.env.SLACK_WEBHOOK_URL_MAIL,
   SLACK_MAX_LENGTH: 5000,
 
   ENABLE_TECH_FEEDS: process.env.ENABLE_TECH_FEEDS !== 'false',

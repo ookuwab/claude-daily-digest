@@ -113,6 +113,7 @@ describe('splitMessage', () => {
 
 describe('sendSlackMessage', () => {
   const originalFetch = global.fetch;
+  const TEST_WEBHOOK_URL = 'https://hooks.slack.com/services/TEST/URL/HERE';
 
   beforeEach(() => {
     global.fetch = jest.fn();
@@ -129,12 +130,12 @@ describe('sendSlackMessage', () => {
       const text = 'テストメッセージ';
 
       // When
-      await sendSlackMessage(text);
+      await sendSlackMessage(text, { webhookUrl: TEST_WEBHOOK_URL });
 
       // Then
       expect(global.fetch).toHaveBeenCalledTimes(1);
       const [url, options] = global.fetch.mock.calls[0];
-      expect(url).toMatch(/^https:\/\/hooks\.slack\.com\/services\//);
+      expect(url).toBe(TEST_WEBHOOK_URL);
       expect(options.method).toBe('POST');
     });
 
@@ -143,7 +144,7 @@ describe('sendSlackMessage', () => {
       global.fetch.mockResolvedValue(createMockResponse(200, 'ok'));
 
       // When
-      await sendSlackMessage('テスト');
+      await sendSlackMessage('テスト', { webhookUrl: TEST_WEBHOOK_URL });
 
       // Then
       const [, options] = global.fetch.mock.calls[0];
@@ -156,7 +157,7 @@ describe('sendSlackMessage', () => {
       const message = 'テストメッセージ本文';
 
       // When
-      await sendSlackMessage(message);
+      await sendSlackMessage(message, { webhookUrl: TEST_WEBHOOK_URL });
 
       // Then
       const [, options] = global.fetch.mock.calls[0];
@@ -171,7 +172,7 @@ describe('sendSlackMessage', () => {
       const text = longLine + '\n' + longLine;
 
       // When
-      await sendSlackMessage(text);
+      await sendSlackMessage(text, { webhookUrl: TEST_WEBHOOK_URL });
 
       // Then
       expect(global.fetch.mock.calls.length).toBeGreaterThan(1);
@@ -184,7 +185,7 @@ describe('sendSlackMessage', () => {
       global.fetch.mockResolvedValue(createMockResponse(500, 'server_error'));
 
       // When & Then
-      await expect(sendSlackMessage('テスト')).rejects.toThrow();
+      await expect(sendSlackMessage('テスト', { webhookUrl: TEST_WEBHOOK_URL })).rejects.toThrow();
     });
 
     it('fetch が reject した場合にエラーが伝播すること', async () => {
@@ -192,7 +193,12 @@ describe('sendSlackMessage', () => {
       global.fetch.mockRejectedValue(new Error('Network error'));
 
       // When & Then
-      await expect(sendSlackMessage('テスト')).rejects.toThrow('Network error');
+      await expect(sendSlackMessage('テスト', { webhookUrl: TEST_WEBHOOK_URL })).rejects.toThrow('Network error');
+    });
+
+    it('webhookUrl が未指定の場合にエラーをスローすること', async () => {
+      // When & Then
+      await expect(sendSlackMessage('テスト')).rejects.toThrow('webhookUrl is required');
     });
   });
 
@@ -202,7 +208,7 @@ describe('sendSlackMessage', () => {
       global.fetch.mockResolvedValue(createMockResponse(200, 'ok'));
 
       // When
-      await sendSlackMessage('テスト', { username: 'test-bot' });
+      await sendSlackMessage('テスト', { webhookUrl: TEST_WEBHOOK_URL, username: 'test-bot' });
 
       // Then
       const [, options] = global.fetch.mock.calls[0];
@@ -215,7 +221,7 @@ describe('sendSlackMessage', () => {
       global.fetch.mockResolvedValue(createMockResponse(200, 'ok'));
 
       // When
-      await sendSlackMessage('テスト', { icon_emoji: ':robot_face:' });
+      await sendSlackMessage('テスト', { webhookUrl: TEST_WEBHOOK_URL, icon_emoji: ':robot_face:' });
 
       // Then
       const [, options] = global.fetch.mock.calls[0];
@@ -231,7 +237,7 @@ describe('sendSlackMessage', () => {
       const text = 'a'.repeat(5000);
 
       // When
-      await sendSlackMessage(text);
+      await sendSlackMessage(text, { webhookUrl: TEST_WEBHOOK_URL });
 
       // Then
       expect(global.fetch).toHaveBeenCalledTimes(1);

@@ -32,6 +32,9 @@ claude -p "Reply with OK" \
   || echo "OAuth warmup failed (exit $?), continuing" >> "$LOG_DIR/warmup.log"
 sleep 3
 
+# Webhook URL（チャンネル別）
+WEBHOOK_URL="$SLACK_WEBHOOK_URL_MAIL"
+
 LOG_FILE="$LOG_DIR/mail-$(date +%Y%m%d-%H%M%S).log"
 TODAY=$(date +%Y-%m-%d)
 
@@ -58,11 +61,14 @@ fi
 # 前回成功時刻 - 1時間
 FETCH_FROM_EPOCH=$((LAST_SUCCESS - 3600))
 
-echo "Fetch from epoch: $FETCH_FROM_EPOCH ($(date -r "$FETCH_FROM_EPOCH" 2>/dev/null || date -d "@$FETCH_FROM_EPOCH" 2>/dev/null || echo 'N/A'))" | tee -a "$LOG_FILE"
+# 人間可読な取得開始日時
+FETCH_FROM_DATE=$(date -r "$FETCH_FROM_EPOCH" "+%Y/%m/%d %H:%M" 2>/dev/null || date -d "@$FETCH_FROM_EPOCH" "+%Y/%m/%d %H:%M" 2>/dev/null || echo 'N/A')
+echo "Fetch from epoch: $FETCH_FROM_EPOCH ($FETCH_FROM_DATE)" | tee -a "$LOG_FILE"
 
 # タスクファイルのテンプレート変数を置換
 TEMP_TASK=$(mktemp)
 sed -e "s/{{FETCH_FROM_EPOCH}}/$FETCH_FROM_EPOCH/g" \
+    -e "s/{{FETCH_FROM_DATE}}/$FETCH_FROM_DATE/g" \
     -e "s/{{SLACK_USER_ID}}/${SLACK_USER_ID:-UNKNOWN}/g" \
     "$TASK_FILE" > "$TEMP_TASK"
 
@@ -83,7 +89,7 @@ if claude -p "$(cat "$TEMP_TASK")" \
   | bash "$SCRIPT_DIR/format-session-log.sh" \
   | tee -a "$LOG_FILE" \
   && [ -f "$OUTPUT_FILE" ] \
-  && node "$PROJECT_DIR/src/slack-webhook.js" --file "$OUTPUT_FILE" --username "Mail Briefing" --icon-emoji ":email:" 2>&1 | tee -a "$LOG_FILE"; then
+  && node "$PROJECT_DIR/src/slack-webhook.js" --file "$OUTPUT_FILE" --webhook-url "$WEBHOOK_URL" --username "Mail Briefing" --icon-emoji ":email:" 2>&1 | tee -a "$LOG_FILE"; then
 
   # 成功時ステータス更新
   CURRENT_EPOCH=$(date +%s)
@@ -95,7 +101,7 @@ else
   echo "Status updated: failure" | tee -a "$LOG_FILE"
   # エラー時Slack通知
   echo ":warning: Mail Briefing がエラー終了しました。ログ: $LOG_FILE" \
-    | node "$PROJECT_DIR/src/slack-webhook.js" --username "Mail Briefing" --icon-emoji ":warning:" 2>&1 | tee -a "$LOG_FILE" || true
+    | node "$PROJECT_DIR/src/slack-webhook.js" --webhook-url "$WEBHOOK_URL" --username "Mail Briefing" --icon-emoji ":warning:" 2>&1 | tee -a "$LOG_FILE" || true
 fi
 
 rm -f "$TEMP_TASK"

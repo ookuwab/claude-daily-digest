@@ -37,6 +37,10 @@ function splitMessage(text, maxLength) {
 }
 
 async function sendSlackMessage(text, options = {}) {
+  const webhookUrl = options.webhookUrl;
+  if (!webhookUrl) {
+    throw new Error('webhookUrl is required in options');
+  }
   const chunks = splitMessage(text, CONFIG.SLACK_MAX_LENGTH);
 
   for (const chunk of chunks) {
@@ -44,7 +48,7 @@ async function sendSlackMessage(text, options = {}) {
     if (options.username) payload.username = options.username;
     if (options.icon_emoji) payload.icon_emoji = options.icon_emoji;
 
-    const response = await fetch(CONFIG.SLACK_WEBHOOK_URL, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -73,6 +77,9 @@ if (require.main === module) {
       i += 2;
     } else if (args[i] === '--icon-emoji' && args[i + 1]) {
       options.icon_emoji = args[i + 1];
+      i += 2;
+    } else if (args[i] === '--webhook-url' && args[i + 1]) {
+      options.webhookUrl = args[i + 1];
       i += 2;
     } else {
       i++;

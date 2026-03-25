@@ -17,10 +17,13 @@ mkdir -p "$LOG_DIR"
 
 LOG_FILE="$LOG_DIR/news-$(date +%Y%m%d-%H%M%S).log"
 
+# Webhook URL（チャンネル別）
+WEBHOOK_URL="$SLACK_WEBHOOK_URL_NEWS"
+
 # エラー時Slack通知
 notify_error() {
   echo ":warning: News Briefing がエラー終了しました。ログ: $LOG_FILE" \
-    | node "$PROJECT_DIR/src/slack-webhook.js" --username "News Briefing" --icon-emoji ":warning:" 2>&1 | tee -a "$LOG_FILE" || true
+    | node "$PROJECT_DIR/src/slack-webhook.js" --webhook-url "$WEBHOOK_URL" --username "News Briefing" --icon-emoji ":warning:" 2>&1 | tee -a "$LOG_FILE" || true
 }
 trap notify_error ERR
 
@@ -66,6 +69,6 @@ if [ ! -f "$OUTPUT_FILE" ]; then
 fi
 
 echo "--- Phase 3: Slack delivery ---" | tee -a "$LOG_FILE"
-node "$PROJECT_DIR/src/slack-webhook.js" --file "$OUTPUT_FILE" --username "News Briefing" --icon-emoji ":newspaper:" 2>&1 | tee -a "$LOG_FILE"
+node "$PROJECT_DIR/src/slack-webhook.js" --file "$OUTPUT_FILE" --webhook-url "$WEBHOOK_URL" --username "News Briefing" --icon-emoji ":newspaper:" 2>&1 | tee -a "$LOG_FILE"
 
 echo "=== News Task End: $(date) ===" | tee -a "$LOG_FILE"

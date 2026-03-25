@@ -112,7 +112,7 @@
 - macOS（launchd Agent を使う場合）
 - Node.js 20 以上
 - [Claude Code CLI](https://docs.anthropic.com/claude-code)
-- Slack Incoming Webhook URL
+- Slack Incoming Webhook URL（ニュース用・メール用の 2 つ）
 - （メール機能を使う場合）Gmail MCP が Claude Code で利用可能
 - （crontab で運用する場合）Anthropic API キー（[Console](https://console.anthropic.com/) で発行）
 
@@ -135,12 +135,15 @@ cp .env.example .env
 `.env` を編集して設定値を入力:
 
 ```
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/XXX/YYY/ZZZ
+SLACK_WEBHOOK_URL_NEWS=https://hooks.slack.com/services/XXX/YYY/ZZZ
+SLACK_WEBHOOK_URL_MAIL=https://hooks.slack.com/services/AAA/BBB/CCC
 SLACK_USER_ID=U0123456789
 CLAUDE_MODEL=sonnet
 ENABLE_TECH_FEEDS=true
 ENABLE_MAIL_DIGEST=true
 ```
+
+> ニュースとメールは別々の Slack チャンネルに配信される。同じチャンネルに送りたい場合は両方に同じ Webhook URL を設定すればよい。
 
 > **`ANTHROPIC_API_KEY` について**
 > launchd Agent で運用する場合は OAuth 認証が使えるため、API キーは不要。

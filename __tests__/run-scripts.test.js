@@ -33,6 +33,14 @@ describe('run-news.sh', () => {
     expect(content).toContain('node "$PROJECT_DIR/src/slack-webhook.js" --file "$OUTPUT_FILE"');
   });
 
+  it('Slack 送信に --webhook-url フラグを指定すること', () => {
+    expect(content).toContain('--webhook-url "$WEBHOOK_URL"');
+  });
+
+  it('WEBHOOK_URL が SLACK_WEBHOOK_URL_NEWS から設定されていること', () => {
+    expect(content).toContain('WEBHOOK_URL="$SLACK_WEBHOOK_URL_NEWS"');
+  });
+
   it('Claude の出力を tee でログファイルに記録すること', () => {
     expect(content).toContain('2>&1 | tee -a "$LOG_FILE"');
   });
@@ -89,6 +97,19 @@ describe('run-mail.sh', () => {
 
   it('slack-webhook.js に --file フラグ付きで送信すること', () => {
     expect(content).toContain('node "$PROJECT_DIR/src/slack-webhook.js" --file "$OUTPUT_FILE"');
+  });
+
+  it('Slack 送信に --webhook-url フラグを指定すること', () => {
+    expect(content).toContain('--webhook-url "$WEBHOOK_URL"');
+  });
+
+  it('WEBHOOK_URL が SLACK_WEBHOOK_URL_MAIL から設定されていること', () => {
+    expect(content).toContain('WEBHOOK_URL="$SLACK_WEBHOOK_URL_MAIL"');
+  });
+
+  it('FETCH_FROM_DATE を算出してテンプレートに渡すこと', () => {
+    expect(content).toContain('FETCH_FROM_DATE=');
+    expect(content).toContain('{{FETCH_FROM_DATE}}');
   });
 
   it('Claude の出力を tee でログファイルに記録すること', () => {
