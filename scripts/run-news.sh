@@ -50,8 +50,10 @@ sed "s/{{SLACK_USER_ID}}/${SLACK_USER_ID:-UNKNOWN}/g" "$TASK_FILE" > "$TEMP_TASK
 
 JSONL_FILE="$LOG_DIR/news-$(date +%Y%m%d-%H%M%S).jsonl"
 
+CLAUDE_TIMEOUT="${CLAUDE_TIMEOUT:-1200}"  # デフォルト20分
+
 echo "--- Phase 2: Claude Code news selection ---" | tee -a "$LOG_FILE"
-claude -p "$(cat "$TEMP_TASK")" \
+timeout "$CLAUDE_TIMEOUT" claude -p "$(cat "$TEMP_TASK")" \
   $CLAUDE_MODEL_FLAG \
   --allowedTools "Read,Write,WebSearch" \
   --output-format stream-json \

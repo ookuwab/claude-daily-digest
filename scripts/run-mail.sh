@@ -67,17 +67,19 @@ echo "Fetch from epoch: $FETCH_FROM_EPOCH ($FETCH_FROM_DATE)" | tee -a "$LOG_FIL
 
 # タスクファイルのテンプレート変数を置換
 TEMP_TASK=$(mktemp)
-sed -e "s/{{FETCH_FROM_EPOCH}}/$FETCH_FROM_EPOCH/g" \
-    -e "s/{{FETCH_FROM_DATE}}/$FETCH_FROM_DATE/g" \
-    -e "s/{{SLACK_USER_ID}}/${SLACK_USER_ID:-UNKNOWN}/g" \
+sed -e "s|{{FETCH_FROM_EPOCH}}|$FETCH_FROM_EPOCH|g" \
+    -e "s|{{FETCH_FROM_DATE}}|$FETCH_FROM_DATE|g" \
+    -e "s|{{SLACK_USER_ID}}|${SLACK_USER_ID:-UNKNOWN}|g" \
     "$TASK_FILE" > "$TEMP_TASK"
 
 rm -f "$OUTPUT_FILE"
 
 JSONL_FILE="$LOG_DIR/mail-$(date +%Y%m%d-%H%M%S).jsonl"
 
+CLAUDE_TIMEOUT="${CLAUDE_TIMEOUT:-1200}"  # デフォルト20分
+
 echo "--- Claude Code mail check ---" | tee -a "$LOG_FILE"
-if claude -p "$(cat "$TEMP_TASK")" \
+if timeout "$CLAUDE_TIMEOUT" claude -p "$(cat "$TEMP_TASK")" \
   $CLAUDE_MODEL_FLAG \
   --allowedTools "mcp__claude_ai_Gmail__gmail_search_messages,mcp__claude_ai_Gmail__gmail_read_message,mcp__claude_ai_Gmail__gmail_read_thread,Read,Write,Grep,WebSearch" \
   --disallowedTools "Bash,Edit" \
