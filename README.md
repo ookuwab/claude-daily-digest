@@ -139,6 +139,7 @@ SLACK_WEBHOOK_URL_NEWS=https://hooks.slack.com/services/XXX/YYY/ZZZ
 SLACK_WEBHOOK_URL_MAIL=https://hooks.slack.com/services/AAA/BBB/CCC
 SLACK_USER_ID=U0123456789
 CLAUDE_MODEL=sonnet
+CLAUDE_RETRY_MAX=3
 ENABLE_TECH_FEEDS=true
 ENABLE_MAIL_DIGEST=true
 ```
@@ -254,7 +255,9 @@ src/
 scripts/
 ├── run-news.sh        # ニュース実行ラッパー
 ├── run-mail.sh        # メール実行ラッパー
-└── format-session-log.sh  # Claude Code ログ整形
+├── format-session-log.sh  # Claude Code ログ整形
+└── lib/
+    └── retry-claude.sh  # タイムアウト時リトライ共通関数
 launchd/
 ├── com.claude-daily-digest.news.plist.example  # launchd Agent テンプレート（ニュース）
 └── com.claude-daily-digest.mail.plist.example  # launchd Agent テンプレート（メール）

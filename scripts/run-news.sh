@@ -51,17 +51,30 @@ sed "s/{{SLACK_USER_ID}}/${SLACK_USER_ID:-UNKNOWN}/g" "$TASK_FILE" > "$TEMP_TASK
 JSONL_FILE="$LOG_DIR/news-$(date +%Y%m%d-%H%M%S).jsonl"
 
 CLAUDE_TIMEOUT="${CLAUDE_TIMEOUT:-1200}"  # デフォルト20分
+CLAUDE_RETRY_MAX="${CLAUDE_RETRY_MAX:-3}"
+
+source "$SCRIPT_DIR/lib/retry-claude.sh"
+
+run_claude() {
+  timeout --kill-after=30 "$CLAUDE_TIMEOUT" claude -p "$(cat "$TEMP_TASK")" \
+    $CLAUDE_MODEL_FLAG \
+    --allowedTools "Read,Write,WebSearch" \
+    --output-format stream-json \
+    --verbose \
+    </dev/null 2>&1 \
+    | tee "$JSONL_FILE" \
+    | bash "$SCRIPT_DIR/format-session-log.sh" \
+    | tee -a "$LOG_FILE"
+}
 
 echo "--- Phase 2: Claude Code news selection ---" | tee -a "$LOG_FILE"
-timeout --kill-after=30 "$CLAUDE_TIMEOUT" claude -p "$(cat "$TEMP_TASK")" \
-  $CLAUDE_MODEL_FLAG \
-  --allowedTools "Read,Write,WebSearch" \
-  --output-format stream-json \
-  --verbose \
-  </dev/null 2>&1 \
-  | tee "$JSONL_FILE" \
-  | bash "$SCRIPT_DIR/format-session-log.sh" \
-  | tee -a "$LOG_FILE"
+claude_exit=0
+retry_on_timeout "$LOG_FILE" "$CLAUDE_RETRY_MAX" run_claude || claude_exit=$?
+
+if [ "$claude_exit" -ne 0 ]; then
+  notify_error
+  exit "$claude_exit"
+fi
 
 rm -f "$TEMP_TASK"
 
