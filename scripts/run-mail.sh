@@ -79,7 +79,7 @@ JSONL_FILE="$LOG_DIR/mail-$(date +%Y%m%d-%H%M%S).jsonl"
 CLAUDE_TIMEOUT="${CLAUDE_TIMEOUT:-1200}"  # デフォルト20分
 
 echo "--- Claude Code mail check ---" | tee -a "$LOG_FILE"
-if timeout "$CLAUDE_TIMEOUT" claude -p "$(cat "$TEMP_TASK")" \
+if timeout --kill-after=30 "$CLAUDE_TIMEOUT" claude -p "$(cat "$TEMP_TASK")" \
   $CLAUDE_MODEL_FLAG \
   --allowedTools "mcp__claude_ai_Gmail__gmail_search_messages,mcp__claude_ai_Gmail__gmail_read_message,mcp__claude_ai_Gmail__gmail_read_thread,Read,Write,Grep,WebSearch" \
   --disallowedTools "Bash,Edit" \
