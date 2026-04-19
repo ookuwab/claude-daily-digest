@@ -84,7 +84,7 @@ source "$SCRIPT_DIR/lib/retry-claude.sh"
 run_claude() {
   timeout --kill-after=30 "$CLAUDE_TIMEOUT" claude -p "$(cat "$TEMP_TASK")" \
     $CLAUDE_MODEL_FLAG \
-    --allowedTools "mcp__claude_ai_Gmail__gmail_search_messages,mcp__claude_ai_Gmail__gmail_read_message,mcp__claude_ai_Gmail__gmail_read_thread,Read,Write,Grep,WebSearch" \
+    --allowedTools "mcp__claude_ai_Gmail__search_threads,mcp__claude_ai_Gmail__get_thread,Read,Write,Grep,WebSearch" \
     --disallowedTools "Bash,Edit" \
     --max-turns 50 \
     --output-format stream-json \

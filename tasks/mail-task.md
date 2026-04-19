@@ -11,7 +11,7 @@ Slack送信はシェルスクリプトが行うため、Claudeは送信を行わ
 
 ## Step 1: メール取得
 
-`gmail_search_messages` で `after:{{FETCH_FROM_EPOCH}}` を指定してメールを検索する。maxResults: `150`。
+`search_threads` で `query: "after:{{FETCH_FROM_EPOCH}}"` を指定してスレッドを検索する。`pageSize` は上限 50 のため、`pageToken` を使って最大 3 ページ（合計 150 スレッド）までページングする。返却される snippet / Subject / From / To / Date で分類判断は可能なので、詳細不要なスレッドには `get_thread` を呼ばないこと。
 
 ## Step 2: メール分類
 
@@ -20,7 +20,7 @@ Slack送信はシェルスクリプトが行うため、Claudeは送信を行わ
 
 要確認のものは、件数が多くなってしまっても必ず全てピックアップして概要をユーザーに伝えること。ユーザーの確認漏れが起きないように。
 
-要確認メールがある場合は `gmail_read_message` で詳細を確認する。
+要確認メールの本文詳細が必要な場合は `get_thread` に `threadId` と `messageFormat: "FULL_CONTENT"` を指定して取得する。
 
 ## Step 3: ファイル出力
 
