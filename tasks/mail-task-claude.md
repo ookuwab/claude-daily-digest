@@ -1,19 +1,17 @@
 # Mail Briefing Task
 
-Gmailコネクタでメールを確認し、要確認メールをSlack用の本文にまとめる。
-Slack送信はシェルスクリプトが行うため、Codexは送信を行わないこと。
+Gmail MCPでメールを確認し、要確認メールをまとめてファイルに書き出す。
+Slack送信はシェルスクリプトが行うため、Claudeは送信を行わないこと。
 出力は全て日本語で行うこと。
 
 **重要: ツール制約**
-- Gmailは読み取り専用で扱い、メールの送信・削除・アーカイブ・ラベル変更は一切行わないこと
-- Bash、Python、シェルコマンドは使用しないこと
-- メールデータの処理・分類はすべてCodexの推論能力で直接行うこと
+- Bash、Python、シェルコマンドは一切使用しないこと（allowedToolsに含まれていないため、許可待ちでハングする）
+- メールデータの処理・分類はすべてClaudeの推論能力で直接行うこと
+- ファイル内容の確認には `Read` や `Grep` を使用すること
 
 ## Step 1: メール取得
 
-Gmailの `search_emails` で `query: "after:{{FETCH_FROM_EPOCH}} -in:spam -in:trash"` を指定し、1ページ20件を目安に検索する。`next_page_token` が返る限り最後までページングし、該当期間の全メールを確認すること。
-
-返却される snippet / Subject / From / To / Date でまず分類する。snippetだけでは重要度や対応要否を判断できない候補は `batch_read_email` で本文をまとめて取得する。返信の流れが判断に影響する場合だけ `read_email_thread` で会話全体を確認すること。
+`search_threads` で `query: "after:{{FETCH_FROM_EPOCH}}"` を指定してスレッドを検索する。`pageSize` は上限 50 のため、`pageToken` を使って最大 3 ページ（合計 150 スレッド）までページングする。返却される snippet / Subject / From / To / Date で分類判断は可能なので、詳細不要なスレッドには `get_thread` を呼ばないこと。
 
 ## Step 2: メール分類
 
@@ -22,12 +20,11 @@ Gmailの `search_emails` で `query: "after:{{FETCH_FROM_EPOCH}} -in:spam -in:tr
 
 要確認のものは、件数が多くなってしまっても必ず全てピックアップして概要をユーザーに伝えること。ユーザーの確認漏れが起きないように。
 
-検索結果が多くても、`next_page_token` を残したまま最終回答へ進まないこと。取得上限やエラーで全件確認できなかった場合は、確認済み件数と未確認範囲を明記し、「全件確認済み」とは書かないこと。
+要確認メールの本文詳細が必要な場合は `get_thread` に `threadId` と `messageFormat: "FULL_CONTENT"` を指定して取得する。
 
-## Step 3: 最終回答
+## Step 3: ファイル出力
 
-以下のテンプレートでメッセージを作成すること。
-最終回答にはSlackへ送る本文のみを出力し、前置き・説明・コードフェンスは付けないこと。
+以下のテンプレートでメッセージを作成し、`Write` ツールで `data/mail-output.txt` に書き出すこと。
 
 ### テンプレート
 

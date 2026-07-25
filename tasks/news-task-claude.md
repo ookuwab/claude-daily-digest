@@ -1,12 +1,12 @@
 # News Briefing Task
 
-ローカルファイルからニュースデータを読み、選定・要約してSlack用の本文を作る。
-Slack送信はシェルスクリプトが行うため、Codexは送信を行わないこと。
+ローカルファイルからニュースデータを読み、選定・要約してファイルに書き出す。
+Slack送信はシェルスクリプトが行うため、Claudeは送信を行わないこと。
 出力は全て日本語で行うこと。
 
 ## Step 1: ニュースデータ読み込み
 
-`data/news-data.json` を読み取り専用で読み取る。
+`Read` ツールで `data/news-data.json` を読み取る。
 
 データ構造:
 ```json
@@ -59,10 +59,9 @@ articlesから`category`が`テック記事`（`source` が `Qiita` または `Z
 
 Qiita/Zennデータがない場合のフォールバック: WebSearchで `site:qiita.com OR site:zenn.dev トレンド YYYY年M月` を検索。
 
-## Step 4: 最終回答
+## Step 4: ファイル出力
 
-以下のテンプレートでメッセージを作成すること。
-最終回答にはSlackへ送る本文のみを出力し、前置き・説明・コードフェンスは付けないこと。
+以下のテンプレートでメッセージを作成し、`Write` ツールで `data/news-output.txt` に書き出すこと。
 
 ### テンプレート
 

@@ -1,6 +1,6 @@
 {
-  "name": "claude-daily-digest",
-  "description": "Daily news, tech articles, and email digest powered by Claude Code and cron",
+  "name": "codex-daily-digest",
+  "description": "Daily news, tech articles, and email digest powered by Codex or Claude",
   "license": "MIT",
   "scripts": {
     "test": "jest"

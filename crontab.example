@@ -1,17 +1,17 @@
-# Claude Daily Digest crontab configuration
+# AI Daily Digest crontab configuration
 # Install: crontab -e, then paste these lines
 #
 # Prerequisites:
 #   - Node.js 20+ installed
-#   - Claude Code CLI installed and authenticated
-#   - Gmail MCP configured for Claude Code
+#   - Selected AI CLI (Codex or Claude Code) installed and authenticated
+#   - Gmail connector installed and connected for the selected AI
 #   - npm install completed in project directory
 
-PATH=/path/to/node/bin:/path/to/claude/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin
+PATH=/path/to/codex/bin:/path/to/claude/bin:/path/to/node/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin
 
 PROJECT_DIR=/path/to/claude-daily-digest
 
-# 05:00 - News briefing (RSS fetch + Claude Code selection/summary + Slack)
+# 05:00 - News briefing (RSS fetch + AI selection/summary + Slack)
 0 5 * * * $PROJECT_DIR/scripts/run-news.sh >> $PROJECT_DIR/data/logs/cron.log 2>&1
 
 # 06:00 & 18:00 - Mail briefing
